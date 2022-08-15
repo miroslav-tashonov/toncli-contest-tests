@@ -1,0 +1,141 @@
+int equal_slices_used_for_testing(slice a, slice b) asm "SDEQ";
+
+const slice addr1 = "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW"a;
+const slice addr2 = "EQDswcg-aerJuHxlwL2wQAkSvgrV6kDw_VNfOtgTWK8umQF5"a;
+const slice addr3 = "EQBXZbPQJp_BMhaDyWMjzkald82he7RpOQOQ_zttKi97adga"a;
+const slice addr4 = "EQCXXQH95jcdeqpSF-B7VgKOCvQYalBgAAi0jLq0oVmeL5s2"a;
+const slice addr5 = "EQCaivcOywIzn4Eu32z61rFPBV2j1SqmcXLKgRCNUqQsyh5t"a;
+const slice addr6 = "EQBuldBCukjrWXJwmdGEsKYWmLz2Ngk9_4Z7Tmqn2LhqIS8h"a;
+const slice addr7 = "EQABoeOwFKfPZeEHkqwN1LHryQ03VYL0LRZ8c0uBCoPeiwJp"a;
+const slice addr8 = "EQAoaO-DXZwQHl8FJeaSD4tdwam9xZxdgJWpcfPj71h7KurZ"a;
+const slice addr9 = "EQAkMcDFs14ofj8WPfI8oSysbAtyOaCBx3IskUxYIF92z8HO"a;
+const slice addr10 = "EQCpYA4guJh70BF4ISLf2BRIHSXujQ4wp6l-vnhVp3jFfmdy"a;
+const slice serialized_addr1 = "Ef80UXx731GHxVr0-LYf3DIViMerdo3uJLAG3ykQZFjXz2kW";
+const slice serialized_addr2 = "EQDswcg-aerJuHxlwL2wQAkSvgrV6kDw_VNfOtgTWK8umQF5";
+const slice serialized_addr3 = "EQBXZbPQJp_BMhaDyWMjzkald82he7RpOQOQ_zttKi97adga";
+const slice serialized_addr4 = "EQCXXQH95jcdeqpSF-B7VgKOCvQYalBgAAi0jLq0oVmeL5s2";
+const slice serialized_addr5 = "EQCaivcOywIzn4Eu32z61rFPBV2j1SqmcXLKgRCNUqQsyh5t";
+const slice serialized_addr6 = "EQBuldBCukjrWXJwmdGEsKYWmLz2Ngk9_4Z7Tmqn2LhqIS8h";
+const slice serialized_addr7 = "EQABoeOwFKfPZeEHkqwN1LHryQ03VYL0LRZ8c0uBCoPeiwJp";
+const slice serialized_addr8 = "EQAoaO-DXZwQHl8FJeaSD4tdwam9xZxdgJWpcfPj71h7KurZ";
+const slice serialized_addr9 = "EQAkMcDFs14ofj8WPfI8oSysbAtyOaCBx3IskUxYIF92z8HO";
+const slice serialized_addr10 = "EQCpYA4guJh70BF4ISLf2BRIHSXujQ4wp6l-vnhVp3jFfmdy";
+
+
+_ test_encode_address_1() {
+    var (_, stack) = invoke_method(encode_address, [addr1]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr1));
+
+    return 10;
+}
+
+_ test_encode_address_2() {
+    var (_, stack) = invoke_method(encode_address, [addr2]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr2));
+
+    return 10;
+}
+
+_ test_encode_address_3() {
+    var (_, stack) = invoke_method(encode_address, [addr3]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr3));
+
+    return 10;
+}
+
+_ test_encode_address_4() {
+    var (_, stack) = invoke_method(encode_address, [addr4]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr4));
+
+    return 10;
+}
+
+_ test_encode_address_5() {
+    var (_, stack) = invoke_method(encode_address, [addr5]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr5));
+
+    return 10;
+}
+
+_ test_encode_address_6() {
+    var (_, stack) = invoke_method(encode_address, [addr6]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr6));
+
+    return 10;
+}
+
+_ test_encode_address_7() {
+    var (_, stack) = invoke_method(encode_address, [addr7]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr7));
+
+    return 10;
+}
+
+_ test_encode_address_8() {
+    var (_, stack) = invoke_method(encode_address, [addr8]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr8));
+
+    return 10;
+}
+
+_ test_encode_address_9() {
+    var (_, stack) = invoke_method(encode_address, [addr9]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr9));
+
+    return 10;
+}
+
+_ test_encode_address_10() {
+    var (_, stack) = invoke_method(encode_address, [addr10]);
+    [slice ser] = stack;
+
+    throw_if(200, ~ equal_slices_used_for_testing(ser, serialized_addr10));
+
+    return 10;
+}
+
+
+_ __test_encode_address_total_points(){
+    var total_result = 0;
+    
+    var (code, _, stack) = invoke_method_full(test_encode_address_1, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_2, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_3, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_4, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_5, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_6, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_7, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_8, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_9, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_encode_address_10, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    
+    return total_result;
+}

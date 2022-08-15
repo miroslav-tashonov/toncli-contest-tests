@@ -1,0 +1,234 @@
+int equal_slices_used_for_testing(slice a, slice b) asm "SDEQ";
+forall X -> int is_null_used_for_testing(X x) asm "ISNULL";
+
+
+_ test_validate_message_1() {
+    var expected_code = 0;
+
+    cell invalid = begin_cell().store_uint(2,32).store_uint(244,32).end_cell();
+    cell random_cell_message = begin_cell().store_ref(invalid).end_cell();
+    var (_, stack) = invoke_method(validate_message, [random_cell_message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 5;
+}
+
+_ test_validate_message_2() {
+    var expected_code = 0;
+
+    cell random_cell_message = begin_cell().store_uint(2,32).store_uint(244,32).end_cell();
+
+    var (_, stack) = invoke_method(validate_message, [random_cell_message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 5;
+}
+
+_ test_validate_message_3() {
+    var expected_code = 0;
+    cell message = generate_external_out_message_with_bad_source_address();
+
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 10;
+}
+
+_ test_validate_message_4() {
+    var expected_code = 0;
+    cell message = generate_external_out_message_with_bad_destination_address();
+
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 9;
+}
+
+_ test_validate_message_5() {
+    var expected_code = 0;
+    cell message = generate_internal_message_with_bad_grams_data();
+
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 10;
+}
+
+_ test_validate_message_6() {
+    var expected_code = 0;
+
+    cell message = generate_internal_message_with_bad_init_state_data();
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    throw_if(200, stack.first() != expected_code );
+    throw_if(200, ~ is_null_used_for_testing(stack.second()));
+
+    return 11;
+}
+
+_ test_validate_message_7() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_internal_message(0, 1000, 0, payload); ;; without init state
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [_, _, _, slice src, slice dest, int amount, _, _, _] = parse_internal_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+    throw_if(200, ~ equal_slices_used_for_testing(result_src, src));
+    throw_if(200, ~ equal_slices_used_for_testing(result_dest, dest));
+    throw_if(200, result_amount != amount );
+
+
+    return 5;
+}
+
+_ test_validate_message_8() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_external_in_message(256, 0, payload); ;; without init state
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [slice src, slice dest, _, _, _, _] = parse_external_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+    throw_if(200, ~ equal_slices_used_for_testing(result_src, src));
+    throw_if(200, ~ equal_slices_used_for_testing(result_dest, dest));
+    throw_if(200, ~ is_null_used_for_testing(result_amount) );
+
+    return 5;
+}
+
+_ test_validate_message_9() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_external_in_message_with_empty_source_address(256, 1, payload); ;; with init state
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [slice src, slice dest, _, _, _, _] = parse_external_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+    throw_if(200, ~ is_null_used_for_testing(result_src) );
+    throw_if(200, ~ equal_slices_used_for_testing(result_dest, dest));
+    throw_if(200, ~ is_null_used_for_testing(result_amount) );
+
+    return 10;
+}
+
+_ test_validate_message_10() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_external_out_message(256, 0, payload);  ;; without init state
+
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [slice src, slice dest, _, _, _, _] = parse_external_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+    throw_if(200, ~ equal_slices_used_for_testing(result_src, src));
+    throw_if(200, ~ equal_slices_used_for_testing(result_dest, dest));
+    throw_if(200, ~ is_null_used_for_testing(result_amount) );
+
+    return 10;
+}
+
+_ test_validate_message_11() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_external_out_message_with_empty_destination_address(256, 1, payload);  ;; with init state
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [slice src, slice dest, _, _, _, _] = parse_external_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+
+    throw_if(200, ~ equal_slices_used_for_testing(result_src, src));
+    throw_if(200, ~ is_null_used_for_testing(result_dest) );
+    throw_if(200, ~ is_null_used_for_testing(result_amount) );
+
+    return 10;
+}
+
+;;same test as the previous one only without init state
+_ test_validate_message_12() {
+    var expected_code = -1;
+    var payload = begin_cell().store_ref(begin_cell().store_uint(1,256).end_cell());
+
+    cell message = generate_external_out_message_with_empty_destination_address(256, 0, payload);  ;; without init state
+    var (_, stack) = invoke_method(validate_message, [message]);
+
+    var [slice src, slice dest, _, _, _, _] = parse_external_message(message);
+
+    var code = stack.first();
+    throw_if(200, code != expected_code );
+
+    [slice result_src, slice result_dest, int result_amount] = stack.second();
+
+    throw_if(200, ~ equal_slices_used_for_testing(result_src, src));
+    throw_if(200, ~ is_null_used_for_testing(result_dest) );
+    throw_if(200, ~ is_null_used_for_testing(result_amount) );
+
+    return 10;
+}
+
+
+_ __test_validate_message_total_points(){
+    var total_result = 0;
+
+    var (code, _, stack) = invoke_method_full(test_validate_message_1, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_2, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_3, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_4, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_5, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_6, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_7, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_8, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_9, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_10, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_11, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_validate_message_12, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    
+    return total_result;
+}

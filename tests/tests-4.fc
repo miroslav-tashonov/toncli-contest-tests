@@ -1,0 +1,373 @@
+#include "typehelpers.fc"; 
+
+int tuple_length_used_for_testing(tuple t) asm "TLEN";
+int equal_slices_used_for_testing(slice a, slice b) asm "SDEQ";
+() drop_c7() impure asm "c7 PUSHCTR 0 INDEXQ SINGLE c7 POPCTR";
+
+() test_tuples(tuple to_test_tuple, tuple deserialize_result) impure method_id
+{
+    repeat(to_test_tuple.tuple_length_used_for_testing())
+    {
+        var initial = to_test_tuple~tpop_used_for_testing();
+        var result = deserialize_result~tpop_used_for_testing();
+
+        if(is_null_used_for_testing(initial))
+        {
+            throw_if(200, ~ is_null_used_for_testing(result));
+        }
+        else
+        {
+            if(is_int_used_for_testing(initial)){
+                int integer1 = force_cast_to_int_used_for_testing(initial);
+                int integer2 = force_cast_to_int_used_for_testing(result);
+
+                throw_if(200, integer1 != integer2);
+            }
+            else 
+            {
+                if(is_cell_used_for_testing(initial))
+                {
+                    cell imp1 = force_cast_to_cell_used_for_testing(initial);
+                    cell imp2 = force_cast_to_cell_used_for_testing(result);
+
+                    throw_if(200, cell_hash(imp1) != cell_hash(imp2));
+                }
+                else
+                {
+                    if(is_slice_used_for_testing(initial))
+                    {
+                        slice s1 = force_cast_to_slice_used_for_testing(initial);
+                        slice s2 = force_cast_to_slice_used_for_testing(result);
+
+                        throw_if(200, ~ equal_slices_used_for_testing(s1, s2));
+                    }
+                    else
+                    {
+                        tuple s1 = force_cast_to_tuple_used_for_testing(initial);
+                        tuple s2 = force_cast_to_tuple_used_for_testing(result);
+
+                        test_tuples(s1, s2);
+                    }
+                }
+            }
+        }
+    }
+}
+
+tuple get_test_tuple_1()
+{
+    return unsafe_tuple([1]);
+}
+
+tuple get_test_tuple_2()
+{
+    return unsafe_tuple([200, 51000, 2147483600]);
+}
+
+tuple get_test_tuple_3()
+{
+    return unsafe_tuple([null()]);
+}
+
+tuple get_test_tuple_4()
+{
+    cell cell_message = begin_cell().store_uint(10, 32).end_cell();
+    slice slice_message = begin_cell().store_uint(18,32).end_cell().begin_parse();
+
+    return unsafe_tuple([cell_message, slice_message]);
+}
+
+tuple get_test_tuple_5()
+{
+    cell cell_message = begin_cell().store_uint(10, 32).end_cell();
+    slice slice_message = begin_cell().store_uint(18,32).end_cell().begin_parse();
+    tuple tuple_message = unsafe_tuple([1,2,3]);
+
+    return unsafe_tuple([1 ,null(), cell_message, slice_message, tuple_message]);
+}
+
+tuple get_test_tuple_6()
+{
+    cell cell_message = begin_cell().store_uint(10, 32).end_cell();
+    slice slice_message = begin_cell().store_uint(18,32).end_cell().begin_parse();
+    tuple tuple_message = unsafe_tuple([1,2,3]);
+    tuple nested_tuple_message = unsafe_tuple([1,null(),tuple_message]);
+
+    return unsafe_tuple([505 ,null(), cell_message, slice_message, nested_tuple_message]);
+}
+
+tuple get_test_tuple_7()
+{
+    tuple test_tuple = empty_tuple();
+    repeat(127)
+    {
+        test_tuple~tpush(1);
+    }
+
+    return test_tuple;
+}
+
+tuple get_test_tuple_8()
+{
+    cell cell_message = begin_cell().store_uint(10, 32).end_cell();
+    tuple test_tuple = empty_tuple();
+    
+    repeat(32)
+    {
+        test_tuple~tpush(null());
+    }
+    repeat(32)
+    {
+        test_tuple~tpush(1);
+    }
+    repeat(32)
+    {
+        test_tuple~tpush(cell_message);
+    }
+    repeat(3)
+    {
+        test_tuple~tpush(cell_message.begin_parse());
+    }
+
+    return test_tuple;
+}
+
+tuple get_test_tuple_9()
+{
+    tuple int_tuple = empty_tuple();
+    tuple null_tuple = empty_tuple();
+    tuple cells_tuple = empty_tuple();
+    tuple slices_tuple = empty_tuple();
+    tuple tuples_tuple = empty_tuple();
+
+    repeat(127)
+    {
+        int_tuple~tpush(1);
+        null_tuple~tpush(null());
+        cells_tuple~tpush(begin_cell().store_uint(1,32).end_cell());
+        slices_tuple~tpush(begin_cell().store_uint(100,32).end_cell().begin_parse());
+        tuples_tuple~tpush(unsafe_tuple([1]));
+    }
+    
+    return unsafe_tuple([int_tuple, null_tuple, null(), cells_tuple, slices_tuple, tuples_tuple]);
+}
+
+tuple get_test_tuple_10()
+{
+    cell test_cell = begin_cell().store_uint(11,32).end_cell();
+    cell test_cell2 = begin_cell().store_uint(11,32).end_cell();
+
+    tuple main_tuple = empty_tuple();
+
+    tuple slices_tuple = empty_tuple();
+    tuple tuples_tuple = empty_tuple();
+
+    repeat(63)
+    {
+        tuples_tuple~tpush(test_cell2);
+    }
+
+    repeat(60)
+    {
+        tuples_tuple~tpush(55);
+    }
+
+    tuples_tuple~tpush(null());
+
+    repeat(126)
+    {
+        slices_tuple~tpush(test_cell.begin_parse());
+    }
+
+    slices_tuple~tpush(tuples_tuple);
+    main_tuple~tpush(slices_tuple);    
+    
+    return unsafe_tuple([1, main_tuple, 80, null(), test_cell.begin_parse()]);
+}
+
+_ test_serializers_1() {
+    var to_test_tuple = get_test_tuple_1();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 5;
+}
+
+_ test_serializers_2() {
+    var to_test_tuple = get_test_tuple_2();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 1;
+}
+
+_ test_serializers_3() {
+    var to_test_tuple = get_test_tuple_3();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 5;
+}
+
+_ test_serializers_4() {
+    var to_test_tuple = get_test_tuple_4();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 11;
+}
+
+_ test_serializers_5() {
+    var to_test_tuple = get_test_tuple_5();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 11;
+}
+
+_ test_serializers_6() {
+    var to_test_tuple = get_test_tuple_6();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 11;
+}
+
+_ test_serializers_7() {
+    var to_test_tuple = get_test_tuple_7();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 11;
+}
+
+_ test_serializers_8() {
+    var to_test_tuple = get_test_tuple_8();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 15;
+}
+
+_ test_serializers_9() {
+    var to_test_tuple = get_test_tuple_9();
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 15;
+}
+
+_ test_serializers_10() {
+    var to_test_tuple = get_test_tuple_10();
+    
+    var (_, stack) = invoke_method(serialize, [to_test_tuple]);
+    var serialize_result = stack.first();
+    drop_c7();
+    throw_if(200, ~ is_cell_used_for_testing(serialize_result));
+
+    var (_, stack) = invoke_method(deserialize, [serialize_result]);
+    [tuple deserialize_result] = stack;
+
+    test_tuples(to_test_tuple, deserialize_result);
+
+    return 15;
+}
+
+
+_ __test_serializers_total_points(){
+    var total_result = 0;
+
+    var (code, _, stack) = invoke_method_full(test_serializers_1, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_2, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_3, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_4, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_5, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_6, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_7, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_8, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_9, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    var (code, _, stack) = invoke_method_full(test_serializers_10, []);
+    total_result += (code != 0) ? 0 : stack.first();
+    
+    return total_result;
+}
