@@ -1,0 +1,29 @@
+contest-1:
+  func:
+    - func/1.fc
+  tests:
+    - tests/tests-1.fc
+
+contest-2:
+  func:
+    - func/2.fc
+  tests:
+    - tests/tests-2.fc
+
+contest-3:
+  func:
+    - func/3.fc
+  tests:
+    - tests/tests-3.fc
+
+contest-4:
+  func:
+    - func/4.fc
+  tests:
+    - tests/tests-4.fc
+
+contest-5:
+  func:
+    - func/5.fc
+  tests:
+    - tests/tests-5.fc
